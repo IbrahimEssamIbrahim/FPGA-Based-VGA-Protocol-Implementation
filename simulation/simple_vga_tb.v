@@ -1,0 +1,39 @@
+`timescale 1ns/1ps
+`include "clk_divider.v"
+`include "counter.v"
+`include "simple_vga.v"
+
+module simple_vga_tb;
+
+    localparam counter_bits = 10, bit_depth = 4;
+    localparam T = 10;
+
+    reg clk = 0, reset_n = 0;
+    wire horizonal_sync, vertical_sync;
+    wire [bit_depth-1:0] red, green, blue;
+    wire [counter_bits-1:0] v_count, h_count;
+    vga_top #(.counter_bits(counter_bits), .bit_depth(bit_depth)) vga_simple (
+    .clk(clk), 
+    .reset_n(reset_n), 
+    .horizonal_sync(horizonal_sync), 
+    .vertical_sync(vertical_sync),     
+    .red(red), 
+    .green(green), 
+    .blue(blue), 
+    .v_count(v_count), 
+    .h_count(h_count)
+);
+
+    always 
+        #(T/2) clk = ~clk;
+    
+    initial begin
+        $dumpfile("simple_vga_tb.vcd");
+        $dumpvars(0, simple_vga_tb);
+        #(T/2) reset_n = 1;
+
+        wait (v_count == 524);
+        $stop;
+    end
+
+endmodule
